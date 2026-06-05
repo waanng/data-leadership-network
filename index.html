@@ -1,0 +1,1022 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>《数据领导力》七位人物关系网络</title>
+  <style>
+    :root {
+      --bg: #f7f5ef;
+      --paper: #fffdf8;
+      --ink: #23231f;
+      --muted: #68665f;
+      --line: #d6d0bf;
+      --green: #147a62;
+      --blue: #255f99;
+      --red: #b6533c;
+      --gold: #b98524;
+      --violet: #7457a8;
+      --shadow: 0 18px 42px rgba(42, 38, 26, .12);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      background: var(--bg);
+      color: var(--ink);
+      font-family: "PingFang SC", "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+    }
+
+    body {
+      min-height: 100%;
+      overflow: hidden;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 430px;
+      grid-template-rows: auto 1fr;
+      height: 100vh;
+    }
+
+    header {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 24px;
+      padding: 18px 22px 14px;
+      border-bottom: 1px solid var(--line);
+      background: rgba(255, 253, 248, .92);
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.2;
+      font-weight: 800;
+      letter-spacing: 0;
+    }
+
+    .subtitle {
+      margin-top: 6px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+      max-width: 700px;
+    }
+
+    .chip,
+    .tool-btn {
+      border: 1px solid var(--line);
+      background: #fffaf0;
+      color: var(--ink);
+      min-height: 36px;
+      border-radius: 7px;
+      padding: 8px 11px;
+      font-size: 13px;
+      cursor: pointer;
+    }
+
+    .chip.active,
+    .tool-btn.active {
+      background: #1f2f2b;
+      border-color: #1f2f2b;
+      color: #fffdf8;
+    }
+
+    .stage {
+      position: relative;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 18% 18%, rgba(20, 122, 98, .10), transparent 30%),
+        radial-gradient(circle at 78% 70%, rgba(181, 83, 60, .10), transparent 28%),
+        var(--bg);
+    }
+
+    .legend {
+      position: absolute;
+      left: 18px;
+      bottom: 18px;
+      display: grid;
+      grid-template-columns: repeat(2, max-content);
+      gap: 8px 14px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(255, 253, 248, .9);
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      white-space: nowrap;
+    }
+
+    .dot {
+      width: 11px;
+      height: 11px;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    aside {
+      border-left: 1px solid var(--line);
+      background: var(--paper);
+      overflow-y: auto;
+      padding: 18px;
+    }
+
+    .search {
+      width: 100%;
+      height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 0 12px;
+      font-size: 14px;
+      background: #fffaf0;
+      color: var(--ink);
+      outline: none;
+    }
+
+    .panel {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--line);
+    }
+
+    .kicker {
+      margin: 0 0 8px;
+      color: var(--muted);
+      font-size: 12px;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.25;
+      letter-spacing: 0;
+    }
+
+    h3 {
+      margin: 16px 0 8px;
+      font-size: 15px;
+    }
+
+    .role {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.6;
+    }
+
+    .summary {
+      margin: 14px 0 0;
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 7px;
+      margin-top: 14px;
+    }
+
+    .tag {
+      border: 1px solid var(--line);
+      background: #fffaf0;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 5px 8px;
+      font-size: 12px;
+    }
+
+    .relation-list {
+      display: grid;
+      gap: 10px;
+      margin-top: 10px;
+    }
+
+    .relation {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      padding: 10px;
+      background: #fffaf0;
+    }
+
+    .relation strong {
+      display: block;
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .relation p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .node-list {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .node-pill {
+      border: 1px solid var(--line);
+      background: transparent;
+      min-height: 34px;
+      border-radius: 7px;
+      padding: 7px 8px;
+      font-size: 13px;
+      color: var(--ink);
+      cursor: pointer;
+      text-align: left;
+    }
+
+    .node-pill:hover {
+      border-color: #9a8f70;
+      background: #fff8e6;
+    }
+
+    .note {
+      margin: 12px 0 0;
+      color: var(--muted);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    .report {
+      font-size: 14px;
+      line-height: 1.75;
+    }
+
+    .report h2 {
+      font-size: 22px;
+      margin-bottom: 12px;
+    }
+
+    .report h3 {
+      margin-top: 20px;
+      padding-top: 12px;
+      border-top: 1px solid var(--line);
+      font-size: 17px;
+    }
+
+    .report h4 {
+      margin: 16px 0 8px;
+      font-size: 15px;
+    }
+
+    .report p,
+    .report li {
+      color: #3f3d37;
+    }
+
+    .report blockquote {
+      margin: 12px 0;
+      padding: 10px 12px;
+      border-left: 4px solid var(--green);
+      background: #fff8e6;
+      color: var(--muted);
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: #fffaf0;
+    }
+
+    table {
+      width: 100%;
+      min-width: 760px;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    th,
+    td {
+      padding: 9px 10px;
+      border-bottom: 1px solid var(--line);
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #f1ead9;
+      color: var(--ink);
+      white-space: nowrap;
+    }
+
+    tr:last-child td {
+      border-bottom: 0;
+    }
+
+    @media (max-width: 920px) {
+      body {
+        overflow: auto;
+      }
+
+      .app {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto 58vh auto;
+        height: auto;
+        min-height: 100vh;
+      }
+
+      header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .toolbar {
+        justify-content: flex-start;
+      }
+
+      aside {
+        border-left: 0;
+        border-top: 1px solid var(--line);
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div>
+        <h1>《数据领导力》七位人物关系网络</h1>
+        <div class="subtitle">直接人物关系、职业路径关系和数据化转型主题关系的动态视图</div>
+      </div>
+      <div class="toolbar" aria-label="筛选关系类型">
+        <button class="chip active" data-filter="all">全部</button>
+        <button class="chip" data-filter="direct">直接关系</button>
+        <button class="chip" data-filter="theme">主题关系</button>
+        <button class="chip" data-filter="leadership">领导力</button>
+        <button class="chip" data-filter="future">推测联系</button>
+        <button class="tool-btn" id="reportJump">文字版</button>
+        <button class="tool-btn" id="resetView">重置</button>
+      </div>
+    </header>
+
+    <main class="stage">
+      <canvas id="network"></canvas>
+      <div class="legend">
+        <span><i class="dot" style="background: var(--green)"></i>核心人物</span>
+        <span><i class="dot" style="background: var(--blue)"></i>能力/阶段</span>
+        <span><i class="dot" style="background: var(--gold)"></i>业务主题</span>
+        <span><i class="dot" style="background: var(--red)"></i>组织场景</span>
+        <span><i class="dot" style="background: var(--violet)"></i>推测联系</span>
+      </div>
+    </main>
+
+    <aside>
+      <input class="search" id="searchBox" placeholder="搜索人物、主题或关系">
+      <section class="panel" id="detailPanel">
+        <p class="kicker">中心节点</p>
+        <h2>数据领导力</h2>
+        <p class="role">让数据跨过技术边界，进入业务场景、组织流程和战略决策。</p>
+        <p class="summary">这本书里的七位主角不是一张熟人社交网，而是一张数据化转型角色网。点击节点可以查看人物定位、主题含义和相关关系。</p>
+        <div class="tags">
+          <span class="tag">数据化</span>
+          <span class="tag">自动化</span>
+          <span class="tag">智能化</span>
+          <span class="tag">组织协同</span>
+        </div>
+      </section>
+      <section class="panel">
+        <p class="kicker">七位人物</p>
+        <div class="node-list" id="personList"></div>
+      </section>
+      <section class="panel report" id="reportSection">
+        <p class="kicker">文字版梳理</p>
+        <h2>《数据领导力》七位人物关系梳理</h2>
+        <blockquote>说明：本书前言明确说，七位人物是“典型角色”和“群像”，不是完整纪实人物传记。因此这里把关系分为两类：一类是书中出现的直接人物关系；另一类是根据职业路径、业务场景和数据领导力能力所形成的主题关系。</blockquote>
+
+        <h3>一、七位核心人物</h3>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>人物</th>
+                <th>篇章定位</th>
+                <th>行业/组织场景</th>
+                <th>主要角色</th>
+                <th>关键词</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>小 R</td>
+                <td>见证者</td>
+                <td>雅虎中国、数据创业公司、电商、数据教育</td>
+                <td>商业数据分析师、数据团队管理者、数据教育者</td>
+                <td>指标体系、BI 团队、数据普及、人才培养</td>
+              </tr>
+              <tr>
+                <td>吴形</td>
+                <td>数据助力创业企业成长</td>
+                <td>互联网创业公司 Squrio</td>
+                <td>首席数据分析师</td>
+                <td>CEO 支持、内部培训、风控应用、数据产品化</td>
+              </tr>
+              <tr>
+                <td>叶茂</td>
+                <td>与客户一同成长</td>
+                <td>数据咨询公司、IT 服务商大数据事业部</td>
+                <td>数据咨询项目经理、分析团队负责人</td>
+                <td>客户共创、项目交付、行业解决方案、人才复制</td>
+              </tr>
+              <tr>
+                <td>林旭</td>
+                <td>信用卡中心的年轻人</td>
+                <td>银行信用卡中心、城市商业银行</td>
+                <td>数据分析师、信用卡数据团队负责人</td>
+                <td>信用评分、客户价值、传统金融数据化</td>
+              </tr>
+              <tr>
+                <td>蒙田</td>
+                <td>数据驱动风险管理</td>
+                <td>消费金融/金融科技公司</td>
+                <td>风控总监、首席风险官</td>
+                <td>数据源头、欺诈风险、外部数据、业务与风险平衡</td>
+              </tr>
+              <tr>
+                <td>程易</td>
+                <td>数据产品经理之路</td>
+                <td>母婴社区互联网公司</td>
+                <td>运营转型的数据产品经理</td>
+                <td>指标定义、推荐系统、算法产品、AI 落地</td>
+              </tr>
+              <tr>
+                <td>陆哲</td>
+                <td>面向未来的首席数据官</td>
+                <td>短视频公司、互联网教育机构</td>
+                <td>算法负责人、教育机构 CDO</td>
+                <td>数据平台、A/B 测试、团队建设、教育智能化</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <h3>二、书中明确出现的直接关系</h3>
+        <p>1. 小 R 与吴形：校友、同行，也是被小 R 推荐给采访者的后续人物。两人在数据人才培养方面观点接近，但吴形更偏数据技术和创业公司内部赋能，小 R 更偏行业见证、团队建设和数据教育。</p>
+        <p>2. 小 R 与陆哲：小 R 在推荐同行时提到陆哲。第七篇开头也写到陆哲帮小 R 策划课程，两人围绕课程、教育和数据人才培养有过沟通。</p>
+        <p>3. 叶茂与林旭：两人曾在凯瑞公司同批实习。林旭是统计科班出身，主动钻研逻辑回归模型；叶茂从林旭那里第一次接触到逻辑回归和信用风险建模，这段经历后来影响了叶茂的建模与汇报。</p>
+        <p>4. 林旭与蒙田：两人曾在信用卡中心共事，并一起参与信用评分、行为评分、客户分池等工作。后来两人分别走向城市商业银行数据负责人和消费金融风控负责人，仍会交流金融科技趋势。</p>
+        <p>5. 叶茂与陈曦、林旭与程总、吴形与老莫、程易与 Eden/黄总、陆哲与姜总/韩鑫：这些不是七位主角之间的关系，但构成每位主角成长中的关键支持关系，体现“数据领导力”需要导师、上级授权和业务伙伴共同推动。</p>
+
+        <h3>三、七位人物之间的主题关系</h3>
+        <h4>1. 从个人能力到团队能力</h4>
+        <p>小 R、叶茂、陆哲都体现了从个人专业能力到团队复制能力的升级。小 R 从分析师成长为 BI 团队管理者，并开始思考数据人才培养；叶茂把凯瑞的项目方法和人才培养机制复制到新的大数据事业部；陆哲作为 CDO 把招聘、分享、培养和跨部门协作都纳入数据团队建设。</p>
+        <h4>2. 从报表到决策</h4>
+        <p>小 R、吴形、程易、陆哲都经历了“先把数据看清楚，再让数据辅助决策”的路径。小 R 从指标体系和报表建立影响力；吴形在创业公司用培训、Excel、风控和优惠券推荐让团队理解数据；程易把报表系统推进到辅助运营决策；陆哲用 A/B 测试把产品决策变成可验证的过程。</p>
+        <h4>3. 从模型到业务价值</h4>
+        <p>林旭、蒙田、程易、陆哲都提醒同一个问题：模型不是目的。林旭从只想建模转向客户价值和业务策略；蒙田把模型、规则、额度、利率和客群选择统一看成风控业务；程易意识到产品目标比算法指标更重要；陆哲把推荐、A/B 测试和教育测评放进真实业务流程。</p>
+        <h4>4. 从内部数据到外部协同</h4>
+        <p>叶茂和蒙田是最典型的“外部协同”角色。叶茂作为咨询/服务方，需要把客户业务问题转化为数据项目，并在项目交付中帮助客户成长；蒙田作为风控负责人，需要评估外部数据源、渠道合作和数据沙盒，在数据安全、成本和模型效果之间做取舍。</p>
+        <h4>5. 从数据化到智能化</h4>
+        <p>七位人物共同构成一条数据化转型路径：小 R、小 R 式 BI 团队和程易的报表平台对应数据化；吴形、林旭、蒙田把规则和模型嵌入流程，对应自动化；程易和陆哲把推荐系统、AI 助手、教育智能化落到产品和组织中，对应智能化。</p>
+
+        <h3>四、关系网络的核心结构</h3>
+        <h4>中心节点</h4>
+        <p>中心是“数据领导力”，它不是单一技能，而是让数据跨过技术边界、进入业务场景、组织流程和战略决策的能力。</p>
+        <h4>第一圈：七位典型角色</h4>
+        <p>七位人物代表七种常见数据化转型位置：见证者/分析师、创业公司数据负责人、咨询服务方、传统金融数据负责人、金融科技风控负责人、数据产品经理、首席数据官。</p>
+        <h4>第二圈：四类领导力</h4>
+        <p>后记把数据领导力分为四类：个人领导力、执行领导力、协同领导力、战略领导力。七位人物都覆盖不止一种能力，但重点不同：</p>
+        <ul>
+          <li>小 R、程易偏个人领导力和协同领导力。</li>
+          <li>吴形、林旭、蒙田偏执行领导力和协同领导力。</li>
+          <li>叶茂偏协同领导力和执行领导力。</li>
+          <li>陆哲偏战略领导力、执行领导力和协同领导力。</li>
+        </ul>
+        <h4>第三圈：关键主题</h4>
+        <p>关键主题包括指标体系、业务场景、数据产品化、风控、客户价值、数据源头、人才培养、CEO 支持、组织协同、智能化落地。</p>
+
+        <h3>五、一句话总览</h3>
+        <p>这七个人并不是一张“熟人社交网”，而是一张“数据化转型角色网”：小 R 代表行业和人才的起点，吴形把数据带入创业组织，叶茂连接数据服务商与客户，林旭把数据嵌入传统金融管理，蒙田把数据变成风险经营能力，程易把数据转译成产品，陆哲则把数据领导力推进到战略、团队和智能化未来。</p>
+
+        <h3>六、2020 年之后的推测性后续</h3>
+        <blockquote>以下内容是基于现实环境变化作出的推测，不代表原书事实，也不代表作者或人物真实经历。它更像是给这七位典型角色续写一段“如果他们继续走在数据化转型现场，可能会遇到什么”的情境分析。</blockquote>
+
+        <h4>现实背景依据</h4>
+        <ul>
+          <li>2021 年以后，个人信息保护、数据安全和算法治理成为企业数据工作的硬边界，数据团队不再只是追求“能不能做”，还要回答“能不能合规地做”。</li>
+          <li>2021 年教育行业“双减”改变了校外培训和教育科技公司的商业前提，教育数据化会从增长、招生、转化，更多转向教学质量、合规经营和学习效果。</li>
+          <li>2022 年“数据二十条”推动数据从企业内部资产走向数据要素、数据流通、数据产品经营和收益分配，数据咨询、金融风控、银行数据治理都会出现新机会。</li>
+          <li>2022 年 11 月以后，生成式 AI 把数据产品、知识管理、客服、教育助教、代码辅助、经营分析全部重新打开；2023 年生成式 AI 服务监管也让“AI 落地”同时带着治理、备案、安全评估和内容责任。</li>
+        </ul>
+
+        <h4>七位主人公可能的后续变化</h4>
+        <p><strong>小 R：</strong>她很可能从数据人才培训进一步转向“数据领导力 + AI 素养”的课程设计者。2020 年前她讲的是指标、BI、分析师成长；2023 年后，她会把生成式 AI、数据合规、业务侧提示词能力、数据产品经理的新边界放进课程里。她的优势不是追逐最前沿模型，而是把一线从业者的困惑翻译成可学习、可练习的路径。</p>
+        <p><strong>吴形：</strong>他所在的创业公司数据负责人角色会被迫升级为“增长、风控、数据治理、AI 应用”的复合负责人。早年他靠培训 Excel、Python、数据化决策影响组织；后续他可能推动内部 Copilot、经营分析助手、风控规则自动解释等工具，但同时更重视权限、审计和模型风险。</p>
+        <p><strong>叶茂：</strong>他的咨询和大数据事业部会从“项目交付”走向“数据资产化服务”。客户不再只问能不能建模型、做报表，而会问数据能否确权、流通、估值、入表、交易、合规共享。叶茂会更像数据要素市场里的解决方案架构师，连接客户、数据交易机构、合规团队和技术供应商。</p>
+        <p><strong>林旭：</strong>城市商业银行的数据负责人会在监管和竞争双重压力下，把重心从信用卡/客户价值扩展到全行级客户经营、普惠金融、风险预警和数据治理。他可能成为银行内部“数据委员会”或“数据资产管理办公室”的关键人物，推动数据标准、指标口径、模型管理和业务策略闭环。</p>
+        <p><strong>蒙田：</strong>金融科技风控会进入更强监管、更强反欺诈、更强数据合规的阶段。蒙田不会只做模型和规则，而会把反诈图谱、外部数据评测、隐私计算、联邦学习、模型可解释性和贷后经营结合起来。他最可能成为“风控 + 合规 + 数据合作”的桥梁角色。</p>
+        <p><strong>程易：</strong>数据产品经理会被生成式 AI 重塑。他早年做报表、推荐系统、AI 助手；后续很可能转向企业级 AI 产品负责人，设计经营分析助手、内容生产助手、运营策略助手。他的挑战是把“看起来会聊天的 AI”变成真正可控、可评估、能接入业务流程的数据产品。</p>
+        <p><strong>陆哲：</strong>教育机构 CDO 会经历最大冲击。若公司处于 K12 校外培训，其商业模式会被“双减”重塑；若转向素质教育、职业教育、成人教育或校内服务，他会把数据和 AI 用在教学测评、个性化学习、教师赋能和学习陪伴上。生成式 AI 出现后，他可能从“推荐和测评”走向“AI 教学助理 + 学习诊断 + 教研内容生成”的综合平台。</p>
+
+        <h4>他们之间可能新增的直接联系</h4>
+        <p>1. <strong>小 R 与程易：</strong>小 R 做 AI 时代数据人才课程时，很可能邀请程易讲“数据产品经理如何被生成式 AI 改写”。程易的实践案例会成为小 R 课程里的产品化样本。</p>
+        <p>2. <strong>小 R 与陆哲：</strong>原有课程策划关系会进一步深化。陆哲在教育智能化中的真实案例，可能成为小 R 讲“数据领导力进入组织核心业务”的高级案例。</p>
+        <p>3. <strong>吴形与程易：</strong>两人会在“企业内部 AI 助手/经营分析助手”上产生强交集。吴形懂创业公司组织推动，程易懂数据产品化，他们可能共同设计轻量化的数据决策工具。</p>
+        <p>4. <strong>叶茂与林旭：</strong>在数据要素市场和银行数字化转型背景下，叶茂可能作为服务商再次服务林旭所在银行，帮助梳理数据资产、数据产品目录、数据治理和跨部门应用场景。</p>
+        <p>5. <strong>叶茂与蒙田：</strong>外部数据评测、隐私计算、风控数据合作会把他们连接起来。叶茂提供咨询和方案，蒙田提供真实风控场景和评测标准。</p>
+        <p>6. <strong>林旭与蒙田：</strong>两人会从老同事变成银行与金融科技之间的合作方、竞争方或行业会议上的共同发声者。他们最可能一起讨论联合风控、普惠金融、反欺诈和数据安全。</p>
+        <p>7. <strong>程易与陆哲：</strong>两人会在 AI 产品和教育智能化之间相遇。程易擅长把 AI 做成产品流程，陆哲拥有教育测评和算法落地场景，二人可能共同探索学习助手、教研助手和运营助手。</p>
+
+        <h4>推测后的总体图景</h4>
+        <p>如果说 2020 年前七位人物面对的是“如何让数据进入业务”，那么 2020 年后的他们面对的会是“如何让数据和 AI 在合规、安全、组织协同和商业价值之间取得平衡”。他们的关系也会从松散的同行推荐、实习同事、金融战友，逐渐变成围绕数据要素、AI 产品、金融风控、教育智能化和人才培养而形成的跨行业协作网络。</p>
+
+        <h4>参考背景链接</h4>
+        <ul>
+          <li><a href="https://openai.com/index/chatgpt/" target="_blank" rel="noreferrer">OpenAI：ChatGPT 于 2022 年 11 月 30 日发布</a></li>
+          <li><a href="https://en.spp.gov.cn/2021-12/29/c_948419.htm" target="_blank" rel="noreferrer">中华人民共和国个人信息保护法</a></li>
+          <li><a href="https://www.gov.cn/zhengce/2022-12/19/content_5732695.htm" target="_blank" rel="noreferrer">中共中央 国务院关于构建数据基础制度更好发挥数据要素作用的意见</a></li>
+          <li><a href="https://en.moe.gov.cn/news/press_releases/202201/t20220107_593036.html" target="_blank" rel="noreferrer">教育部：“双减”政策实施进展</a></li>
+          <li><a href="https://www.cac.gov.cn/2022-12/20/c_1673191495430696.htm" target="_blank" rel="noreferrer">中央网信办：“数据二十条”新政促进数据赋能实体经济</a></li>
+          <li><a href="https://regulations.ai/regulations/china-2023-7-generative-ai" target="_blank" rel="noreferrer">生成式人工智能服务管理暂行办法背景说明</a></li>
+        </ul>
+      </section>
+    </aside>
+  </div>
+
+  <script>
+    const nodes = [
+      { id: "数据领导力", label: "数据领导力", kind: "center", radius: 34, summary: "全书中心概念：让数据在业务、组织和战略层面产生价值。", role: "中心概念", tags: ["数据化", "自动化", "智能化", "组织转型"] },
+      { id: "小 R", label: "小 R", kind: "person", chapter: "01 见证者", role: "商业数据分析师、BI 团队管理者、数据教育者", summary: "她见证中国互联网数据应用的发展，从雅虎中国 BI 团队、数据创业公司到电商和数据教育，核心经验是指标体系、团队影响力和数据人才培养。", tags: ["指标体系", "BI 团队", "人才培养", "数据普及"] },
+      { id: "吴形", label: "吴形", kind: "person", chapter: "02 数据助力创业企业成长", role: "互联网创业公司的首席数据分析师", summary: "他在创业公司中把数据从报表和分析推向业务决策、内部培训、风控流程和数据产品，突出 CEO 支持与组织赋能。", tags: ["创业公司", "内部培训", "数据化决策", "数据产品化"] },
+      { id: "叶茂", label: "叶茂", kind: "person", chapter: "03 与客户一同成长", role: "数据咨询项目经理、分析团队负责人", summary: "他从数据咨询公司成长起来，后来带领大数据事业部分析团队，核心关系是客户共创、项目交付、行业解决方案和人才复制。", tags: ["咨询服务", "客户共创", "项目管理", "行业解决方案"] },
+      { id: "林旭", label: "林旭", kind: "person", chapter: "04 信用卡中心的年轻人", role: "银行信用卡中心数据分析师、数据团队负责人", summary: "他从信用卡中心基层数据工作起步，经历信用评分、行为评分、客户价值模型和数据团队建设，代表传统金融内部的数据化落地。", tags: ["信用评分", "客户价值", "传统金融", "数据团队"] },
+      { id: "蒙田", label: "蒙田", kind: "person", chapter: "05 数据驱动风险管理", role: "金融科技公司风控总监、首席风险官", summary: "他从信用卡中心转入消费金融，以数据源头、外部数据、欺诈风险、额度策略和渠道合作构建数据驱动的风控流程。", tags: ["风控", "数据源头", "欺诈风险", "外部数据"] },
+      { id: "程易", label: "程易", kind: "person", chapter: "06 数据产品经理之路", role: "运营转型的数据产品经理", summary: "他从运营岗位转到数据产品，经历指标定义、报表平台、推荐系统、AI 助手和写作沉淀，体现业务语言与技术语言之间的转译。", tags: ["数据产品", "推荐系统", "AI 产品", "指标定义"] },
+      { id: "陆哲", label: "陆哲", kind: "person", chapter: "07 面向未来的首席数据官", role: "算法负责人、教育机构首席数据官", summary: "他从大厂算法和短视频推荐系统走向教育机构 CDO，建设数据平台、推动 A/B 测试、组建团队，并尝试切入教育智能化核心。", tags: ["首席数据官", "A/B 测试", "教育智能化", "团队建设"] },
+      { id: "个人领导力", label: "个人领导力", kind: "ability", summary: "数据工作者通过专业能力、沟通能力和稳定成果赢得信任。", tags: ["专业能力", "沟通", "信任"] },
+      { id: "执行领导力", label: "执行领导力", kind: "ability", summary: "数据团队负责人复制能力、培养团队，并推动数据成果稳定交付。", tags: ["团队管理", "交付", "复制"] },
+      { id: "协同领导力", label: "协同领导力", kind: "ability", summary: "跨部门把业务问题转成数据问题，再把数据成果转成可执行动作。", tags: ["跨部门", "业务语言", "共赢"] },
+      { id: "战略领导力", label: "战略领导力", kind: "ability", summary: "核心管理层为数据化转型设定方向、投入资源，并推动文化变革。", tags: ["CEO 工程", "路线图", "组织文化"] },
+      { id: "数据化", label: "数据化", kind: "ability", summary: "企业拥有可靠数据和指标体系，能够用数据复现业务流程、评价结果。", tags: ["指标", "报表", "数据平台"] },
+      { id: "自动化", label: "自动化", kind: "ability", summary: "把成熟的数据规则、模型和流程工程化，让它们稳定执行。", tags: ["规则", "模型", "流程"] },
+      { id: "智能化", label: "智能化", kind: "ability", summary: "数据应用机制能更主动地发现问题、尝试解决问题，并持续迭代。", tags: ["AI", "推荐", "智能决策"] },
+      { id: "指标体系", label: "指标体系", kind: "theme", summary: "从口径统一、报表稳定开始建立组织对数据的信任。", tags: ["口径", "报表", "BI"] },
+      { id: "业务场景", label: "业务场景", kind: "theme", summary: "数据价值只能在合理业务场景中被创造出来。", tags: ["场景为王", "业务痛点"] },
+      { id: "数据产品化", label: "数据产品化", kind: "theme", summary: "把分析、模型、报表和算法变成业务人员可持续使用的产品。", tags: ["产品经理", "平台", "工具"] },
+      { id: "风控", label: "风控", kind: "theme", summary: "金融场景中数据价值最直接的体现之一，包含评分、规则、欺诈和客群选择。", tags: ["信用评分", "欺诈", "额度"] },
+      { id: "客户价值", label: "客户价值", kind: "theme", summary: "从单一指标和单一模型走向客户分层、长期价值和策略组合。", tags: ["分层", "CLV", "策略"] },
+      { id: "数据源头", label: "数据源头", kind: "theme", summary: "埋点、明细数据、渠道数据和外部数据决定分析与模型上限。", tags: ["埋点", "外部数据", "数据质量"] },
+      { id: "人才培养", label: "人才培养", kind: "theme", summary: "数据化转型需要持续培养懂数据、懂业务、懂沟通的人。", tags: ["招聘", "培训", "分享"] },
+      { id: "CEO 支持", label: "CEO 支持", kind: "theme", summary: "高层支持决定数据团队能否切入核心业务并形成组织影响力。", tags: ["授权", "资源", "战略"] },
+      { id: "互联网组织", label: "互联网组织", kind: "org", summary: "小 R、吴形、程易、陆哲都经历过互联网组织中高速变化的数据应用场景。", tags: ["互联网", "增长", "产品"] },
+      { id: "金融组织", label: "金融组织", kind: "org", summary: "叶茂、林旭、蒙田都与金融行业深度相关，风控、营销和客户价值是主要场景。", tags: ["银行", "消费金融", "风控"] },
+      { id: "教育组织", label: "教育组织", kind: "org", summary: "陆哲把算法和数据平台能力带入教育行业，尝试进入教学核心流程。", tags: ["教育", "测评", "智能化"] }
+    ];
+
+    const links = [
+      { source: "数据领导力", target: "小 R", type: "center", desc: "行业见证者与人才培养视角" },
+      { source: "数据领导力", target: "吴形", type: "center", desc: "创业公司数据负责人视角" },
+      { source: "数据领导力", target: "叶茂", type: "center", desc: "数据咨询与客户共创视角" },
+      { source: "数据领导力", target: "林旭", type: "center", desc: "传统金融内部落地视角" },
+      { source: "数据领导力", target: "蒙田", type: "center", desc: "金融科技风控经营视角" },
+      { source: "数据领导力", target: "程易", type: "center", desc: "数据产品经理视角" },
+      { source: "数据领导力", target: "陆哲", type: "center", desc: "首席数据官与智能化视角" },
+      { source: "小 R", target: "吴形", type: "direct", desc: "校友、同行；小 R 推荐吴形，二人都关注数据人才培养。" },
+      { source: "小 R", target: "陆哲", type: "direct", desc: "陆哲曾帮小 R 策划课程；小 R 推荐/提及陆哲作为后续访谈对象。" },
+      { source: "叶茂", target: "林旭", type: "direct", desc: "二人在凯瑞同期实习，林旭让叶茂第一次接触逻辑回归和信用风险建模。" },
+      { source: "林旭", target: "蒙田", type: "direct", desc: "信用卡中心同事，一起参与评分卡、客户分池和风控模型应用。" },
+      { source: "小 R", target: "指标体系", type: "theme", desc: "通过指标口径、BI 团队和报表体系建立数据影响力。" },
+      { source: "小 R", target: "人才培养", type: "theme", desc: "从团队管理到数据教育，持续思考数据人才成长。" },
+      { source: "吴形", target: "CEO 支持", type: "theme", desc: "老莫的支持让数据团队能在创业公司推动组织变化。" },
+      { source: "吴形", target: "数据产品化", type: "theme", desc: "把报表、风控和推荐转成可用产品与业务工具。" },
+      { source: "叶茂", target: "业务场景", type: "theme", desc: "咨询交付要先理解客户业务，再把问题转为数据方案。" },
+      { source: "叶茂", target: "人才培养", type: "theme", desc: "把咨询公司的训练方式复制到新的分析团队。" },
+      { source: "林旭", target: "风控", type: "theme", desc: "从申请评分卡、行为评分卡到客户分层，推动金融数据应用。" },
+      { source: "林旭", target: "客户价值", type: "theme", desc: "从建模走向客户终身价值和业务策略组合。" },
+      { source: "蒙田", target: "风控", type: "theme", desc: "把风险控制理解为支持业务增长的经营能力。" },
+      { source: "蒙田", target: "数据源头", type: "theme", desc: "强调埋点、渠道、外部数据和明细数据对风控的决定性作用。" },
+      { source: "程易", target: "数据产品化", type: "theme", desc: "把指标定义、报表平台、推荐系统和 AI 助手产品化。" },
+      { source: "程易", target: "业务场景", type: "theme", desc: "从运营需求出发，强调数据产品服务真实决策。" },
+      { source: "陆哲", target: "数据源头", type: "theme", desc: "在教育机构先统一埋点、数据平台和自动报表。" },
+      { source: "陆哲", target: "CEO 支持", type: "theme", desc: "CDO 工作需要 CEO 支持，才能推动跨部门数据文化。" },
+      { source: "陆哲", target: "人才培养", type: "theme", desc: "通过招聘、内推、训练营和团队分享建设数据团队。" },
+      { source: "小 R", target: "个人领导力", type: "leadership", desc: "从事实出发、用稳定成果建立信任。" },
+      { source: "小 R", target: "执行领导力", type: "leadership", desc: "管理 BI 团队并规划部门工作。" },
+      { source: "吴形", target: "协同领导力", type: "leadership", desc: "用培训和场景让各部门理解并使用数据。" },
+      { source: "吴形", target: "执行领导力", type: "leadership", desc: "组建并扩展数据团队，推动数据平台、分析和产品职能。" },
+      { source: "叶茂", target: "协同领导力", type: "leadership", desc: "连接客户、项目团队和业务负责人。" },
+      { source: "叶茂", target: "执行领导力", type: "leadership", desc: "带领团队交付项目并复制行业方法。" },
+      { source: "林旭", target: "执行领导力", type: "leadership", desc: "从分析师成长为数据分析组负责人。" },
+      { source: "林旭", target: "协同领导力", type: "leadership", desc: "协调市场、风控和管理层围绕客户价值行动。" },
+      { source: "蒙田", target: "协同领导力", type: "leadership", desc: "在市场、运营、数据供应商和风控之间平衡收益与风险。" },
+      { source: "蒙田", target: "执行领导力", type: "leadership", desc: "建立风控数据分析、规则、模型和监控流程。" },
+      { source: "程易", target: "个人领导力", type: "leadership", desc: "主动补足机器学习、写作和产品沟通能力。" },
+      { source: "程易", target: "协同领导力", type: "leadership", desc: "在运营、算法、产品和开发之间转译需求。" },
+      { source: "陆哲", target: "战略领导力", type: "leadership", desc: "作为 CDO 规划数据平台、团队和教育智能化方向。" },
+      { source: "陆哲", target: "执行领导力", type: "leadership", desc: "组建团队、严把招聘、建立分享和交付机制。" },
+      { source: "指标体系", target: "数据化", type: "leadership", desc: "指标和报表是数据化的入口。" },
+      { source: "数据产品化", target: "自动化", type: "leadership", desc: "把分析结果固化为产品和流程。" },
+      { source: "风控", target: "自动化", type: "leadership", desc: "评分、规则和策略可被工程化执行。" },
+      { source: "数据源头", target: "数据化", type: "leadership", desc: "数据质量和埋点决定数据化基础。" },
+      { source: "智能化", target: "陆哲", type: "leadership", desc: "教育智能化、A/B 测试和算法应用。" },
+      { source: "智能化", target: "程易", type: "leadership", desc: "推荐系统和 AI 助手落地。" },
+      { source: "互联网组织", target: "小 R", type: "theme", desc: "互联网数据应用早期见证。" },
+      { source: "互联网组织", target: "吴形", type: "theme", desc: "创业公司内部数据赋能。" },
+      { source: "互联网组织", target: "程易", type: "theme", desc: "母婴社区数据产品与推荐系统。" },
+      { source: "互联网组织", target: "陆哲", type: "theme", desc: "短视频推荐系统经验。" },
+      { source: "金融组织", target: "叶茂", type: "theme", desc: "银行、保险、基金等客户咨询。" },
+      { source: "金融组织", target: "林旭", type: "theme", desc: "信用卡中心和城市商业银行。" },
+      { source: "金融组织", target: "蒙田", type: "theme", desc: "消费金融和金融科技风控。" },
+      { source: "教育组织", target: "陆哲", type: "theme", desc: "教育机构 CDO 与教学智能化。" },
+      { source: "业务场景", target: "CEO 支持", type: "theme", desc: "高层支持帮助数据团队切入核心业务。" },
+      { source: "业务场景", target: "客户价值", type: "theme", desc: "场景中衡量客户价值，才能转成策略。" },
+      { source: "小 R", target: "程易", type: "future", desc: "推测：小 R 的 AI 时代数据人才课程可能邀请程易讲数据产品经理的生成式 AI 转型案例。" },
+      { source: "小 R", target: "陆哲", type: "future", desc: "推测：两人的课程合作会深化为教育智能化和数据领导力案例共创。" },
+      { source: "吴形", target: "程易", type: "future", desc: "推测：两人会在企业内部 AI 助手、经营分析助手和轻量化数据决策工具上合作。" },
+      { source: "叶茂", target: "林旭", type: "future", desc: "推测：叶茂可能作为服务商帮助林旭所在银行推进数据资产、数据治理和数据产品目录。" },
+      { source: "叶茂", target: "蒙田", type: "future", desc: "推测：外部数据评测、隐私计算和风控数据合作会让两人产生交集。" },
+      { source: "林旭", target: "蒙田", type: "future", desc: "推测：两人会在联合风控、普惠金融、反欺诈和数据安全场景中继续合作或共同发声。" },
+      { source: "程易", target: "陆哲", type: "future", desc: "推测：AI 产品和教育智能化会把两人连接起来，共同探索学习助手、教研助手和运营助手。" },
+      { source: "小 R", target: "叶茂", type: "future", desc: "推测：数据要素与数据领导力培训会需要叶茂这类咨询交付案例，成为课程和行业分享素材。" },
+      { source: "吴形", target: "蒙田", type: "future", desc: "推测：创业公司风控和金融科技风控都会面对 AI 反欺诈、模型治理与数据合规，两人可能在行业交流中互相借鉴。" }
+    ];
+
+    const canvas = document.getElementById("network");
+    const ctx = canvas.getContext("2d");
+    const detailPanel = document.getElementById("detailPanel");
+    const searchBox = document.getElementById("searchBox");
+    const chips = Array.from(document.querySelectorAll(".chip"));
+    const personList = document.getElementById("personList");
+    const resetView = document.getElementById("resetView");
+    const reportJump = document.getElementById("reportJump");
+    const colorMap = {
+      center: "#23231f",
+      person: "#147a62",
+      ability: "#255f99",
+      theme: "#b98524",
+      org: "#b6533c"
+    };
+    let width = 1;
+    let height = 1;
+    let activeFilter = "all";
+    let selected = nodes[0];
+    let hovered = null;
+    let dragging = null;
+    let dragOffset = { x: 0, y: 0 };
+    let transform = { x: 0, y: 0, scale: 1 };
+
+    const nodeById = new Map(nodes.map(node => [node.id, node]));
+    links.forEach(link => {
+      link.s = nodeById.get(link.source);
+      link.t = nodeById.get(link.target);
+    });
+
+    function seedPositions() {
+      const rings = {
+        person: 185,
+        ability: 305,
+        theme: 410,
+        org: 505
+      };
+      const groups = {
+        person: nodes.filter(n => n.kind === "person"),
+        ability: nodes.filter(n => n.kind === "ability"),
+        theme: nodes.filter(n => n.kind === "theme"),
+        org: nodes.filter(n => n.kind === "org")
+      };
+      nodes.forEach(node => {
+        node.vx = 0;
+        node.vy = 0;
+        if (node.kind === "center") {
+          node.x = width / 2;
+          node.y = height / 2;
+          return;
+        }
+        const group = groups[node.kind];
+        const index = group.indexOf(node);
+        const angle = (Math.PI * 2 * index / group.length) - Math.PI / 2;
+        const radius = rings[node.kind] || 300;
+        node.x = width / 2 + Math.cos(angle) * Math.min(radius, Math.min(width, height) * .44);
+        node.y = height / 2 + Math.sin(angle) * Math.min(radius, Math.min(width, height) * .44);
+      });
+    }
+
+    function resize() {
+      const ratio = window.devicePixelRatio || 1;
+      const rect = canvas.getBoundingClientRect();
+      width = Math.max(320, rect.width);
+      height = Math.max(320, rect.height);
+      canvas.width = width * ratio;
+      canvas.height = height * ratio;
+      ctx.setTransform(ratio, 0, 0, ratio, 0, 0);
+      seedPositions();
+      render();
+    }
+
+    function visibleLinks() {
+      const query = searchBox.value.trim().toLowerCase();
+      return links.filter(link => {
+        const typeOk = activeFilter === "all" || link.type === activeFilter || (activeFilter === "leadership" && link.type === "leadership");
+        if (!typeOk) return false;
+        if (!query) return true;
+        return [link.source, link.target, link.desc, link.s.summary, link.t.summary].join(" ").toLowerCase().includes(query);
+      });
+    }
+
+    function visibleNodes() {
+      const set = new Set();
+      visibleLinks().forEach(link => {
+        set.add(link.s);
+        set.add(link.t);
+      });
+      set.add(selected);
+      return Array.from(set);
+    }
+
+    function tick() {
+      const shownLinks = visibleLinks();
+      const shownNodes = visibleNodes();
+      shownNodes.forEach(node => {
+        if (node === dragging) return;
+        const targetRadius = node.kind === "center" ? 0 : node.kind === "person" ? 185 : node.kind === "ability" ? 305 : node.kind === "theme" ? 410 : 505;
+        const cx = width / 2;
+        const cy = height / 2;
+        let angle = Math.atan2(node.y - cy, node.x - cx);
+        if (!Number.isFinite(angle)) angle = 0;
+        const tx = cx + Math.cos(angle) * Math.min(targetRadius, Math.min(width, height) * .44);
+        const ty = cy + Math.sin(angle) * Math.min(targetRadius, Math.min(width, height) * .44);
+        if (node.kind === "center") {
+          node.vx += (cx - node.x) * .04;
+          node.vy += (cy - node.y) * .04;
+        } else {
+          node.vx += (tx - node.x) * .002;
+          node.vy += (ty - node.y) * .002;
+        }
+      });
+      shownLinks.forEach(link => {
+        const dx = link.t.x - link.s.x;
+        const dy = link.t.y - link.s.y;
+        const dist = Math.max(1, Math.hypot(dx, dy));
+        const ideal = link.type === "center" ? 170 : link.type === "direct" ? 150 : link.type === "leadership" ? 190 : 220;
+        const force = (dist - ideal) * .008;
+        const fx = dx / dist * force;
+        const fy = dy / dist * force;
+        if (link.s !== dragging && link.s.kind !== "center") {
+          link.s.vx += fx;
+          link.s.vy += fy;
+        }
+        if (link.t !== dragging && link.t.kind !== "center") {
+          link.t.vx -= fx;
+          link.t.vy -= fy;
+        }
+      });
+      for (let i = 0; i < shownNodes.length; i++) {
+        for (let j = i + 1; j < shownNodes.length; j++) {
+          const a = shownNodes[i];
+          const b = shownNodes[j];
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.max(1, Math.hypot(dx, dy));
+          const min = (a.radius || 20) + (b.radius || 20) + 24;
+          if (dist < min) {
+            const push = (min - dist) * .018;
+            const fx = dx / dist * push;
+            const fy = dy / dist * push;
+            if (a !== dragging && a.kind !== "center") {
+              a.vx -= fx;
+              a.vy -= fy;
+            }
+            if (b !== dragging && b.kind !== "center") {
+              b.vx += fx;
+              b.vy += fy;
+            }
+          }
+        }
+      }
+      shownNodes.forEach(node => {
+        if (node === dragging) return;
+        node.vx *= .84;
+        node.vy *= .84;
+        node.x += node.vx;
+        node.y += node.vy;
+        const margin = 45;
+        node.x = Math.max(margin, Math.min(width - margin, node.x));
+        node.y = Math.max(margin, Math.min(height - margin, node.y));
+      });
+    }
+
+    function relationColor(type) {
+      if (type === "direct") return "#b6533c";
+      if (type === "leadership") return "#255f99";
+      if (type === "theme") return "#9b771f";
+      if (type === "future") return "#7457a8";
+      return "#6b665a";
+    }
+
+    function render() {
+      tick();
+      ctx.clearRect(0, 0, width, height);
+      ctx.save();
+      ctx.translate(transform.x, transform.y);
+      ctx.scale(transform.scale, transform.scale);
+      const shownLinks = visibleLinks();
+      const shownNodes = visibleNodes();
+      const connected = new Set();
+      if (selected) {
+        shownLinks.forEach(link => {
+          if (link.s === selected || link.t === selected) {
+            connected.add(link.s);
+            connected.add(link.t);
+          }
+        });
+      }
+      shownLinks.forEach(link => {
+        const isFocus = selected && (link.s === selected || link.t === selected);
+        ctx.beginPath();
+        ctx.moveTo(link.s.x, link.s.y);
+        ctx.lineTo(link.t.x, link.t.y);
+        ctx.strokeStyle = relationColor(link.type);
+        ctx.globalAlpha = isFocus ? .95 : .28;
+        ctx.lineWidth = link.type === "direct" || link.type === "future" ? 2.8 : isFocus ? 2.2 : 1.2;
+        ctx.stroke();
+        ctx.globalAlpha = 1;
+      });
+      shownNodes.forEach(node => {
+        const r = node.radius || (node.kind === "person" ? 24 : node.kind === "center" ? 34 : 19);
+        const focus = node === selected || node === hovered || connected.has(node);
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r + (focus ? 5 : 0), 0, Math.PI * 2);
+        ctx.fillStyle = focus ? "rgba(255, 253, 248, .92)" : "rgba(255, 253, 248, .72)";
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(node.x, node.y, r, 0, Math.PI * 2);
+        ctx.fillStyle = colorMap[node.kind];
+        ctx.fill();
+        ctx.lineWidth = node === selected ? 3 : 1.5;
+        ctx.strokeStyle = node === selected ? "#23231f" : "rgba(35,35,31,.28)";
+        ctx.stroke();
+        ctx.fillStyle = "#fffdf8";
+        ctx.font = `700 ${node.kind === "center" ? 13 : 12}px "PingFang SC", sans-serif`;
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        wrapLabel(node.label, node.x, node.y, r * 1.45);
+      });
+      ctx.restore();
+      requestAnimationFrame(render);
+    }
+
+    function wrapLabel(text, x, y, maxWidth) {
+      const chars = Array.from(text);
+      let line = "";
+      const lines = [];
+      chars.forEach(ch => {
+        const test = line + ch;
+        if (ctx.measureText(test).width > maxWidth && line) {
+          lines.push(line);
+          line = ch;
+        } else {
+          line = test;
+        }
+      });
+      lines.push(line);
+      const lineHeight = 15;
+      const offset = (lines.length - 1) * lineHeight / 2;
+      lines.forEach((ln, i) => ctx.fillText(ln, x, y - offset + i * lineHeight));
+    }
+
+    function pointerPosition(event) {
+      const rect = canvas.getBoundingClientRect();
+      return {
+        x: (event.clientX - rect.left - transform.x) / transform.scale,
+        y: (event.clientY - rect.top - transform.y) / transform.scale
+      };
+    }
+
+    function nodeAt(pos) {
+      return visibleNodes().slice().reverse().find(node => {
+        const r = (node.radius || (node.kind === "person" ? 24 : 19)) + 8;
+        return Math.hypot(node.x - pos.x, node.y - pos.y) <= r;
+      });
+    }
+
+    function selectNode(node) {
+      selected = node;
+      detailPanel.innerHTML = `
+        <p class="kicker">${node.chapter || node.role || "主题节点"}</p>
+        <h2>${node.label}</h2>
+        <p class="role">${node.role || ""}</p>
+        <p class="summary">${node.summary}</p>
+        <div class="tags">${(node.tags || []).map(tag => `<span class="tag">${tag}</span>`).join("")}</div>
+        <h3>相关关系</h3>
+        <div class="relation-list">${links
+          .filter(link => link.s === node || link.t === node)
+          .map(link => {
+            const other = link.s === node ? link.t : link.s;
+            const type = link.type === "direct" ? "直接关系" : link.type === "future" ? "推测联系" : link.type === "leadership" ? "领导力" : link.type === "theme" ? "主题关系" : "中心关系";
+            return `<div class="relation"><strong>${type} · ${other.label}</strong><p>${link.desc}</p></div>`;
+          }).join("")}</div>
+      `;
+    }
+
+    canvas.addEventListener("pointerdown", event => {
+      const pos = pointerPosition(event);
+      const node = nodeAt(pos);
+      if (node) {
+        dragging = node;
+        dragOffset.x = node.x - pos.x;
+        dragOffset.y = node.y - pos.y;
+        selectNode(node);
+        canvas.setPointerCapture(event.pointerId);
+      }
+    });
+
+    canvas.addEventListener("pointermove", event => {
+      const pos = pointerPosition(event);
+      hovered = nodeAt(pos);
+      canvas.style.cursor = hovered ? "grab" : "default";
+      if (dragging) {
+        dragging.x = pos.x + dragOffset.x;
+        dragging.y = pos.y + dragOffset.y;
+        dragging.vx = 0;
+        dragging.vy = 0;
+        canvas.style.cursor = "grabbing";
+      }
+    });
+
+    canvas.addEventListener("pointerup", event => {
+      dragging = null;
+      canvas.releasePointerCapture(event.pointerId);
+    });
+
+    canvas.addEventListener("click", event => {
+      const node = nodeAt(pointerPosition(event));
+      if (node) selectNode(node);
+    });
+
+    chips.forEach(chip => {
+      chip.addEventListener("click", () => {
+        activeFilter = chip.dataset.filter;
+        chips.forEach(item => item.classList.toggle("active", item === chip));
+      });
+    });
+
+    resetView.addEventListener("click", () => {
+      searchBox.value = "";
+      activeFilter = "all";
+      chips.forEach(item => item.classList.toggle("active", item.dataset.filter === "all"));
+      selected = nodeById.get("数据领导力");
+      seedPositions();
+      selectNode(selected);
+    });
+
+    reportJump.addEventListener("click", () => {
+      document.getElementById("reportSection").scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+
+    searchBox.addEventListener("input", () => {
+      const query = searchBox.value.trim().toLowerCase();
+      const match = nodes.find(node => [node.label, node.summary, ...(node.tags || [])].join(" ").toLowerCase().includes(query));
+      if (query && match) selectNode(match);
+    });
+
+    nodes.filter(node => node.kind === "person").forEach(node => {
+      const button = document.createElement("button");
+      button.className = "node-pill";
+      button.textContent = node.label;
+      button.addEventListener("click", () => selectNode(node));
+      personList.appendChild(button);
+    });
+
+    window.addEventListener("resize", resize);
+    resize();
+    selectNode(selected);
+  </script>
+</body>
+</html>
