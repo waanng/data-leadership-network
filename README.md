@@ -10,3 +10,7 @@
 - 直接关系、主题关系、领导力关系和推测联系筛选
 
 访问 GitHub Pages 后，入口文件为 `index.html`。
+
+发布地址：
+
+https://waanng.github.io/data-leadership-network/
